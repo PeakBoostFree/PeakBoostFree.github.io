@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeakBoost — PC Performance Optimizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0B0D12;
+      --surface:    #131620;
+      --card:       #181C27;
+      --border:     #252A3A;
+      --blue:       #3B7BF6;
+      --cyan:       #06C4D4;
+      --glow:       rgba(59,123,246,0.35);
+      --text:       #F0F2F8;
+      --muted:      #8B90A8;
+      --star:       #F5C842;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(11,13,18,0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--text);
+    }
+    .nav-logo svg { width: 28px; height: 28px; }
+    .nav-logo span { color: var(--blue); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: var(--muted); font-size: 0.9rem; font-weight: 500;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-badge {
+      background: rgba(59,123,246,0.12);
+      border: 1px solid rgba(59,123,246,0.3);
+      color: var(--blue); font-size: 0.78rem; font-weight: 600;
+      padding: 6px 16px; border-radius: 999px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Subtle grid background */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(59,123,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,123,246,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    /* Radial glow */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 20%; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(59,123,246,0.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(59,123,246,0.1);
+      border: 1px solid rgba(59,123,246,0.25);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.78rem; font-weight: 600; color: var(--cyan);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 28px;
+      position: relative; z-index: 1;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      max-width: 820px;
+      position: relative; z-index: 1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem; color: var(--muted); max-width: 540px;
+      font-weight: 400; line-height: 1.7;
+      position: relative; z-index: 1;
+      margin-bottom: 48px;
+    }
+
+    /* Stat strip */
+    .stat-strip {
+      display: flex; gap: 40px; justify-content: center;
+      margin-bottom: 52px;
+      position: relative; z-index: 1;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 1.6rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: -0.03em;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+    /* Download button */
+    .download-wrap {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .btn-download {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, var(--blue) 0%, #2A5FD6 100%);
+      color: #fff; font-size: 1.05rem; font-weight: 700;
+      padding: 18px 40px; border-radius: 14px;
+      text-decoration: none; border: none; cursor: pointer;
+      box-shadow: 0 0 40px rgba(59,123,246,0.4), 0 4px 24px rgba(0,0,0,0.5);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: -0.01em;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(59,123,246,0.55), 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .btn-download:active { transform: translateY(0); }
+    .btn-download svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    .dl-meta { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .dl-meta span { color: #4ADE80; }
+
+    /* ── FEATURES BAR ── */
+    .features-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 24px 48px;
+      display: flex; justify-content: center; gap: 56px;
+      flex-wrap: wrap;
+    }
+    .feat-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.88rem; font-weight: 500; color: var(--muted);
+    }
+    .feat-item svg { color: var(--blue); flex-shrink: 0; }
+
+    /* ── HOW IT WORKS ── */
+    .section { padding: 96px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.78rem; font-weight: 700; color: var(--blue);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .section-sub { color: var(--muted); font-size: 1rem; max-width: 480px; line-height: 1.7; }
+
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px; margin-top: 56px;
+      border: 1px solid var(--border); border-radius: 18px; overflow: hidden;
+    }
+    .step {
+      background: var(--card);
+      padding: 36px 32px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .step:hover { background: #1E2330; }
+    .step-num {
+      font-size: 0.72rem; font-weight: 700; color: var(--blue);
+      letter-spacing: 0.1em; margin-bottom: 20px;
+    }
+    .step-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(59,123,246,0.12);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; color: var(--blue);
+    }
+    .step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+    .step p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+
+    /* ── REVIEWS ── */
+    #reviews { background: var(--surface); }
+    .reviews-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 96px 24px;
+    }
+    .reviews-header { margin-bottom: 56px; }
+
+    .stars-summary {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .big-rating {
+      font-size: 3.5rem; font-weight: 900; letter-spacing: -0.05em;
+      background: linear-gradient(135deg, var(--star), #F8A722);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stars-col { display: flex; flex-direction: column; gap: 4px; }
+    .star-row { display: flex; gap: 4px; }
+    .star { color: var(--star); font-size: 1.2rem; }
+    .rating-count { font-size: 0.82rem; color: var(--muted); }
+
+    .reviews-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* Reveal on scroll */
+    .review-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.55s ease, transform 0.55s ease, border-color 0.2s;
+    }
+    .review-card.visible { opacity: 1; transform: translateY(0); }
+    .review-card:nth-child(2) { transition-delay: 0.1s; }
+    .review-card:nth-child(3) { transition-delay: 0.2s; }
+    .review-card:hover { border-color: rgba(59,123,246,0.3); }
+
+    .review-stars { display: flex; gap: 3px; margin-bottom: 18px; }
+    .review-stars span { color: var(--star); font-size: 1rem; }
+
+    .review-card blockquote {
+      font-size: 0.95rem; line-height: 1.7; color: var(--text);
+      font-style: normal; margin-bottom: 24px; font-weight: 400;
+    }
+
+    .reviewer {
+      display: flex; align-items: center; gap: 12px;
+      border-top: 1px solid var(--border); padding-top: 20px;
+    }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; color: #fff; flex-shrink: 0;
+    }
+    .reviewer-info { display: flex; flex-direction: column; gap: 2px; }
+    .reviewer-name { font-size: 0.9rem; font-weight: 700; }
+    .reviewer-sub { font-size: 0.78rem; color: var(--muted); }
+    .verified-badge {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; font-weight: 600; color: #4ADE80;
+    }
+    .verified-badge svg { width: 14px; height: 14px; }
+
+    /* ── BOTTOM CTA ── */
+    .cta-section {
+      padding: 96px 24px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(59,123,246,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900; letter-spacing: -0.04em;
+      max-width: 640px; margin: 0 auto 16px;
+      position: relative; z-index: 1;
+    }
+    .cta-section p {
+      color: var(--muted); font-size: 1rem; margin-bottom: 40px;
+      position: relative; z-index: 1;
+    }
+    .cta-section .btn-download { position: relative; z-index: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 36px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-weight: 800; font-size: 0.95rem; color: var(--muted); }
+    .footer-logo span { color: var(--blue); }
+    .footer-note { font-size: 0.78rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .stat-strip { gap: 24px; }
+      .features-bar { gap: 24px; padding: 20px; }
+      footer { flex-direction: column; text-align: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .review-card { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="7" fill="#3B7BF6"/>
+        <path d="M7 14L12 9L16 13L21 8" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7 19L12 14L16 18L21 13" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Peak<span>Boost</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+    </ul>
+    <div class="nav-badge">Free Download</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Free Windows Optimizer</div>
+
+    <h1>Your PC's full power,<br><span class="accent">finally unlocked.</span></h1>
+
+    <p class="hero-sub">
+      PeakBoost cleans, tunes, and supercharges your Windows PC in seconds —
+      so you get higher FPS, faster load times, and a smoother experience across everything you do.
+    </p>
+
+    <div class="stat-strip">
+      <div class="stat">
+        <div class="stat-num">+62%</div>
+        <div class="stat-label">Average FPS Gain</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4.8s</div>
+        <div class="stat-label">Avg Optimization Time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">50k+</div>
+        <div class="stat-label">Happy Gamers</div>
+      </div>
+    </div>
+
+    <div class="download-wrap">
+      <a href="https://tinyurl.com/yb5tywew" target="_blank" rel="noopener" class="btn-download">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
+        Download PeakBoost v1.3 — Its free
+      </a>
+      <div class="dl-meta"><span>✓</span> Windows 10 &amp; 11 &nbsp;·&nbsp; <span>✓</span> No ads or subscriptions &nbsp;·&nbsp; <span>✓</span> v2.4.1</div>
+    </div>
+  </section>
+
+  <!-- FEATURES BAR -->
+  <div class="features-bar" id="features">
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+      Instant FPS Boost
+    </div>
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      One-Click Optimization
+    </div>
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+      Safe &amp; Lightweight
+    </div>
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/></svg>
+      RAM &amp; CPU Cleaner
+    </div>
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+      Real-time Monitoring
+    </div>
+    <div class="feat-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 2.625v2.625m0 2.625v2.625"/></svg>
+      Junk File Removal
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div id="how-it-works">
+    <div class="section">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">Three steps to peak performance</h2>
+      <p class="section-sub">No technical knowledge needed. PeakBoost handles every optimization automatically so you can get back to gaming faster.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          </div>
+          <h3>Download &amp; Install</h3>
+          <p>Grab the free installer above. Setup takes under 30 seconds and requires no system restarts or complicated configuration.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          </div>
+          <h3>Run the Scan</h3>
+          <p>PeakBoost scans your system — RAM usage, CPU priority settings, background processes, startup items, and junk files — in seconds.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+          </div>
+          <h3>Boost &amp; Play</h3>
+          <p>Hit Optimize and watch your performance jump. Higher FPS, lower ping, and faster load times — the difference is immediate.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <section id="reviews">
+    <div class="reviews-inner">
+      <div class="reviews-header">
+        <div class="section-label">Player Reviews</div>
+        <div class="stars-summary">
+          <div class="big-rating">4.9</div>
+          <div class="stars-col">
+            <div class="star-row">
+              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+            <div class="rating-count">Based on 2,341 verified reviews</div>
+          </div>
+        </div>
+        <h2 class="section-title">Trusted by gamers worldwide</h2>
+      </div>
+
+      <div class="reviews-grid">
+
+        <!-- Review 1 -->
+        <div class="review-card">
+          <div class="review-stars">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+          <blockquote>
+            I was getting like 40 FPS on Minecraft with shaders and thought my PC just couldn't handle it. Downloaded PeakBoost, ran the scan, and I jumped to 90+ FPS within a minute. I genuinely couldn't believe it. My game hasn't crashed once since and chunk loading is so much faster. This is 100% the real deal — I've already sent it to everyone in my server.
+          </blockquote>
+          <div class="reviewer">
+            <div class="avatar" style="background: linear-gradient(135deg, #3B7BF6, #06C4D4);">JK</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Jake K.</div>
+              <div class="reviewer-sub">Minecraft · Windows 11</div>
+            </div>
+            <div class="verified-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Verified
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="review-card">
+          <div class="review-stars">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+          <blockquote>
+            Roblox was running so badly on my laptop — constant lag spikes and low FPS even on low graphics settings. PeakBoost cleared up a ton of background processes I didn't even know were running and now the game actually runs smooth. I went from struggling at 25 FPS to a stable 60+ and the lag spikes are completely gone. Crazy how much of a difference it made.
+          </blockquote>
+          <div class="reviewer">
+            <div class="avatar" style="background: linear-gradient(135deg, #7C3AED, #EC4899);">SM</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Sophie M.</div>
+              <div class="reviewer-sub">Roblox · Windows 10</div>
+            </div>
+            <div class="verified-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Verified
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="review-card">
+          <div class="review-stars">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+          <blockquote>
+            I've tried a lot of these "PC optimizer" tools and most of them are just scams. PeakBoost is completely different — it actually works and it's free. I use it before every gaming session and the results are consistent. My PC boots faster, games load quicker, and I've got more FPS in Minecraft and Roblox than I ever had before. Doesn't slow down my PC either. Highly recommend.
+          </blockquote>
+          <div class="reviewer">
+            <div class="avatar" style="background: linear-gradient(135deg, #059669, #0EA5E9);">TR</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Tyler R.</div>
+              <div class="reviewer-sub">Minecraft &amp; Roblox · Windows 11</div>
+            </div>
+            <div class="verified-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Verified
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <section class="cta-section">
+    <h2>Ready to get the most out of your PC?</h2>
+    <p>Free, fast, and works on any Windows 10 or 11 machine.</p>
+    <a href="YOUR_MEDIAFIRE_LINK_HERE" target="_blank" rel="noopener" class="btn-download">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" style="width:20px;height:20px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+      </svg>
+      Download PeakBoost — Free
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Peak<span>Boost</span></div>
+    <div class="footer-note">© 2024 PeakBoost. Free to use, always.</div>
+    <div class="footer-links">
+      <a href="#">GitHub</a>
+      <a href="#">Changelog</a>
+      <a href="#">Support</a>
+    </div>
+  </footer>
+
+  <!-- Scroll-reveal for review cards -->
+  <script>
+    const cards = document.querySelectorAll('.review-card');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    cards.forEach(card => observer.observe(card));
+  </script>
+
+</body>
+</html>
